@@ -32,6 +32,12 @@ const SettingsScreen = lazy(() =>
   )
 );
 
+const Portfolio = lazy(() =>
+  import(
+    /* webpackChunkName: "SettingsScreen", webpackPrefetch: true  */ '../components/Portfolio/index'
+  )
+);
+
 function App() {
   const dispatch = useDispatch();
   const redirectTo = useSelector((state) => state.common.redirectTo);
@@ -52,10 +58,10 @@ function App() {
   if (appLoaded) {
     return (
       <>
-        <Header />
+        {/* <Header /> */}
         <Suspense fallback={<p>Loading...</p>}>
           <Routes>
-            <Route exact path="/" element={<Home />} />
+            <Route exact path="/" element={<Portfolio />} />
             <Route path="/login" element={<AuthScreen />} />
             <Route path="/register" element={<AuthScreen isRegisterScreen />} />
             <Route path="/editor/:slug" element={<Editor />} />

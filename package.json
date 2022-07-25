@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.0",
+    "antd": "^4.21.7",
     "marked": "^4.0.14",
     "prop-types": "^15.8.1",
     "react": "^18.0.0",
@@ -33,9 +34,10 @@
     "react-router-dom": "^6.3.0",
     "redux": "^4.1.2",
     "redux-logger": "^3.0.6",
+    "sass": "^1.54.0",
+    "snarkdown": "^2.0.0",
     "superagent": "^7.1.1",
     "superagent-promise": "^1.1.0",
-    "snarkdown": "^2.0.0",
     "xss": "^1.0.9"
   },
   "scripts": {
