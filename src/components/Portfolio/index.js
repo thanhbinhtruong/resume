@@ -1,7 +1,5 @@
 import 'antd/dist/antd.variable.min.css';
-// import "antd/dist/antd.dark.css";
-import { InfoCircleOutlined } from '@ant-design/icons';
-
+import ReCaptchaV2 from 'react-google-recaptcha';
 import { ConfigProvider } from 'antd';
 import { Col, Row } from 'antd';
 import {
@@ -11,7 +9,7 @@ import {
   Input,
   Image,
   Typography,
-  Layout,
+  notification,
   BackTop,
   Tabs,
   Timeline,
@@ -29,7 +27,6 @@ import './portfolio.scss';
 import Tree from './Tree';
 
 const { Title } = Typography;
-const { Header, Footer, Sider, Content } = Layout;
 ConfigProvider.config({
   theme: {
     primaryColor: 'rgb(157, 209, 134)',
@@ -39,6 +36,12 @@ ConfigProvider.config({
 
 const Portfolio = () => {
   const [visible, setVisible] = useState(false);
+  const [name, setName] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState('');
+  const [captcha, setCaptcha] = useState('');
+
   const showDrawer = () => {
     setVisible(true);
   };
@@ -47,19 +50,49 @@ const Portfolio = () => {
     setVisible(false);
   };
 
-  const onFinish = (values) => {
-    console.log('Success:', values);
-  };
-
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
   const [form] = Form.useForm();
-  const [requiredMark, setRequiredMarkType] = useState('optional');
 
-  const onRequiredTypeChange = ({ requiredMarkValue }) => {
-    setRequiredMarkType(requiredMarkValue);
+  const onFinish = async (values) => {
+    const data = await fetch(
+      'https://ckeq63e4o2.execute-api.ap-southeast-1.amazonaws.com/dev/contact',
+      {
+        method: 'POST',
+        body: JSON.stringify(values),
+        headers: {
+          'content-type': 'application/json',
+        },
+      }
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        } else {
+          return response.json();
+        }
+      })
+      .then((myJson) => {
+        console.log('myblob', myJson);
+
+        if (myJson.success === true) {
+          notification.success({
+            message: 'Success',
+          });
+        } else {
+          notification.error({
+            message: 'Unsuccess',
+            description: myJson.errors,
+          });
+        }
+      })
+      .catch((e) => {
+        console.log('myblobe', e);
+        notification.error({
+          message: 'Unsuccess',
+          description: e.message,
+        });
+      });
   };
+
   const style = {
     height: 40,
     width: 40,
@@ -69,6 +102,14 @@ const Portfolio = () => {
     color: 'white',
     textAlign: 'center',
     fontSize: 14,
+  };
+
+  function onChange(value) {
+    setCaptcha(value);
+  }
+
+  const handleExpire = () => {
+    setCaptcha();
   };
 
   return (
@@ -160,18 +201,33 @@ const Portfolio = () => {
                 type="primary"
                 shape="circle"
                 icon={<FacebookOutlined />}
+                onClick={() => {
+                  window.open(
+                    'https://www.facebook.com/thanhbinh.truong.678',
+                    '_blank'
+                  );
+                }}
               />
               <Button
                 className="margin-right-btn"
                 type="primary"
                 shape="circle"
                 icon={<InstagramOutlined />}
+                onClick={() => {
+                  window.open(
+                    'https://www.instagram.com/thanhbinhtruong',
+                    '_blank'
+                  );
+                }}
               />
               <Button
                 className="margin-right-btn"
                 type="primary"
                 shape="circle"
                 icon={<GithubOutlined />}
+                onClick={() => {
+                  window.open('https://github.com/thanhbinhtruong', '_blank');
+                }}
               />
             </div>
           </Col>
@@ -234,6 +290,7 @@ const Portfolio = () => {
                     <Title level={5}>AWS Certified Developer – Associate</Title>
                     <a
                       className="higlight-text"
+                      target="_blank"
                       href="https://www.credly.com/badges/31591a41-e7e3-46e6-8e51-31e1b6de2274/public_url"
                     >
                       <LinkOutlined /> AWS DVA
@@ -245,6 +302,7 @@ const Portfolio = () => {
                     </Title>
                     <a
                       className="higlight-text"
+                      target="_blank"
                       href="https://www.credly.com/badges/32d32578-8e40-4d01-89b6-d77678e447d4/public_url"
                     >
                       <LinkOutlined /> PSM I
@@ -256,6 +314,7 @@ const Portfolio = () => {
                     </Title>
                     <a
                       className="higlight-text"
+                      target="_blank"
                       href="https://www.credly.com/badges/7c8609c5-d902-400b-ad28-761982a6554c/public_url"
                     >
                       <LinkOutlined /> AWS - SAA
@@ -287,45 +346,106 @@ const Portfolio = () => {
 
         <Row>
           <Col xs={24}>
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={{
-                requiredMarkValue: requiredMark,
-              }}
-              onValuesChange={onRequiredTypeChange}
-              requiredMark={requiredMark}
-            >
+            <Form form={form} layout="vertical" onFinish={onFinish}>
               <Row gutter={[36, 24]}>
                 <Col xs={24} md={12}>
-                  <Form.Item label="Subject" required>
-                    <Input placeholder="input placeholder" />
+                  <Form.Item
+                    name="subject"
+                    label="Subject"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Input
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                    />
                   </Form.Item>
-                  <Form.Item label="Name" required>
-                    <Input placeholder="input placeholder" />
+                  <Form.Item
+                    name="name"
+                    label="Name"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                   </Form.Item>
-                  <Form.Item label="Email" required>
-                    <Input placeholder="input placeholder" />
+                  <Form.Item
+                    name="email"
+                    label="Email"
+                    rules={[
+                      {
+                        required: true,
+                        type: 'email',
+                        message: 'The input is not valid E-mail!',
+                      },
+                    ]}
+                  >
+                    <Input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item label="Message" required>
+                  <Form.Item
+                    name="message"
+                    label="Message"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
                     <Input.TextArea
                       showCount
                       style={{
-                        height: 148,
+                        height: 204,
                       }}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                     />
                   </Form.Item>
-                  <Form.Item>
-                    <Button type="primary">Submit</Button>
-                  </Form.Item>
                 </Col>
+              </Row>
+              <Row justify="center">
+                <div style={{ textAlign: 'center' }}>
+                  <Col xs={24}>
+                    <Form.Item
+                      name="captcha"
+                      rules={[
+                        {
+                          required: true,
+                        },
+                      ]}
+                    >
+                      <ReCaptchaV2
+                        value={captcha}
+                        sitekey="6LdEjxshAAAAAMVvv0BGtLndN9QLnGZx0Qmrvcg9"
+                        onChange={onChange}
+                        onExpired={handleExpire}
+                      />
+                    </Form.Item>
+                    <Form.Item>
+                      <Button type="primary" htmlType="submit">
+                        Submit
+                      </Button>
+                    </Form.Item>
+                  </Col>
+                </div>
               </Row>
             </Form>
           </Col>
         </Row>
-        <Row justify="center">
+
+        <Row>
           <Col xs={24}>
             <div style={{ textAlign: 'center' }}>
               <p>&copy; 2022 ThanhBinh Truong</p>
@@ -333,6 +453,7 @@ const Portfolio = () => {
           </Col>
         </Row>
       </div>
+
       <Drawer
         title="ThanhBinh Truong"
         placement="right"
